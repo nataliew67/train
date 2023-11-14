@@ -1,0 +1,89 @@
+import kotlin.system.exitProcess
+
+fun createTrain() {
+    val cities = listOf("Бийск", "Барнаул", "Новосибирск", "Омск", "Красноярск", "Иркутск", "Томск", "Кемерово", "Новокузнецк", "Братск", "Абакан", "Чита", "Хабаровск", "Владивосток", "Улан-Удэ")
+
+    var finishTrip = true
+    while (finishTrip) {
+        println("Шаг 1 - Создание направление")
+        val direction = Direction(cities).createRoute()
+        println("Маршрут поезда: $direction")
+
+        println("Шаг 2 - Продажа билеты")
+        val ticket = CashDesk(5, 201).sellTickets()
+
+        println("Шаг 3 - Сформирование поезд")
+        val train = FastTrain(direction)
+        train.addCarriages(ticket)
+
+        println("Шаг 4 - Отправление поезд")
+        println("Поезд ${train.route.first} - ${train.route.second} отправлен, состоящий из ${train.carriages.size} вагонов.")
+        train.carriages.forEachIndexed { index, carriage ->
+            println("Вагон ${index + 1}: вместимость - ${carriage.capacity}, пассажиров - ${carriage.passengers}")
+        }
+
+        println("\nХотите ли вы снова составить поезд?")
+        println("1. Да\n2. EXIT")
+        when (readLine()) {
+            "1" -> {      createTrain()
+            }
+
+            "2","EXIT"-> exitProcess(0)
+
+            else -> {
+                println("Некорректный ввод. Пожалуйста, введите 1 или 2")
+                createTrain()
+            }
+        }
+    }
+}
+
+fun main() {
+    println("Хотите ли вы составить поезд?")
+    println("1. Да\n2. EXIT")
+    when (readLine()) {
+        "1" -> {
+            createTrain()
+        }
+
+        "2", "EXIT" -> exitProcess(0)
+        else -> {
+            println("Некорректный ввод. Пожалуйста, введите 1 или 2")
+            createTrain()
+        }
+    }
+}
+
+class Direction(val cities: List<String>) {
+    fun createRoute(): Pair<String, String> {
+        val from = cities.random()
+        var to = cities.random()
+        while (to == from) {
+            to = cities.random()
+        }
+        return Pair(from, to)
+    }
+}
+
+
+class CashDesk(val minPassengers: Int, val maxPassengers: Int) {
+    fun sellTickets(): Int {
+        return (minPassengers..maxPassengers).random()
+    }
+}
+
+class FastTrain(val route: Pair<String, String>, var carriages: MutableList<Carriage> = mutableListOf()) {
+//carriages  - список вагонов поезда
+    fun addCarriages(passengers: Int) {
+        var remainingPassengers = passengers
+        while (remainingPassengers > 0) {
+            val capacity = (5..25).random() // вместительность
+            val passengersToBoard = if (remainingPassengers >= capacity) capacity else remainingPassengers
+            carriages.add(Carriage(capacity, passengersToBoard))  //добавляем вагон
+            remainingPassengers -= passengersToBoard
+        }
+    }
+}
+
+class Carriage(val capacity: Int, var passengers: Int = 0)
+
